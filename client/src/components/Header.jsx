@@ -16,7 +16,9 @@ export default function Header() {
     <header className="site-header">
       <div className="header-inner">
         <Link to="/" className="site-title">
-          Mindless Musings: A Quirky Blog
+          Mindless Musings:
+          <br />
+          Quirky Blog
         </Link>
         <nav className="site-nav">
           <Link to="/">Home</Link>
