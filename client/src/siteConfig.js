@@ -49,4 +49,4 @@ export const socialLinks = [
 
 // DONATIONS — paste your Square donation link below. Leave it as an empty
 // string ("") to hide the donate button. It shows in the footer.
-export const donationUrl = "PASTE-YOUR-SQUARE-LINK-HERE";
+export const donationUrl = "https://square.link/u/jVcCKGVv";
