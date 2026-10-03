@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Philip's Blog
 
 A complete, full-stack personal blog — dynamic single-page React app on the
@@ -175,3 +176,6 @@ to `client/.env` or rely on the `http://localhost:5000/api` fallback.
    `npm run dev` in `client/`.
 4. Open `http://localhost:5173`, log in, visit `/admin`, and write the first
    real post.
+=======
+# personal-blog
+>>>>>>> fa136a7 (Initial commit)
