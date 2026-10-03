@@ -18,7 +18,7 @@ export default function SubscribeForm({ inline = false }) {
       setEmail('');
     } catch (err) {
       setStatus('error');
-      setMessage(err.response?.data?.message || 'Something went wrong. Please try again.');
+      setMessage(err.response?.data?.error || err.response?.data?.message || 'Something went wrong. Please try again.');
     }
   }
 

@@ -23,7 +23,7 @@ export default function Login() {
       navigate(from, { replace: true });
     } catch (err) {
       setStatus('error');
-      setError(err.response?.data?.message || 'Login failed. Check your email and password.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Login failed. Check your email and password.');
     }
   }
 

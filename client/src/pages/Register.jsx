@@ -20,7 +20,7 @@ export default function Register() {
       navigate('/', { replace: true });
     } catch (err) {
       setStatus('error');
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Registration failed. Please try again.');
     }
   }
 

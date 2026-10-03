@@ -20,7 +20,7 @@ export default function Contact() {
       setMessage('');
     } catch (err) {
       setStatus('error');
-      setError(err.response?.data?.message || 'Could not send your message. Please try again.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Could not send your message. Please try again.');
     }
   }
 

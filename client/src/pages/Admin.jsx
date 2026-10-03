@@ -34,7 +34,7 @@ export default function Admin() {
       const [statsRes, postsRes, subsRes, msgsRes] = await Promise.all([
         api.get('/admin/stats'),
         api.get('/posts/all'),
-        api.get('/subscribers'),
+        api.get('/subscribe'),
         api.get('/contact'),
       ]);
       setStats(statsRes.data);
@@ -42,7 +42,7 @@ export default function Admin() {
       setSubscribers(Array.isArray(subsRes.data) ? subsRes.data : subsRes.data?.subscribers || []);
       setMessages(Array.isArray(msgsRes.data) ? msgsRes.data : msgsRes.data?.messages || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not load the admin dashboard.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Could not load the admin dashboard.');
     } finally {
       setLoading(false);
     }
@@ -130,7 +130,7 @@ export default function Admin() {
       setTab('posts');
       await loadDashboard();
     } catch (err) {
-      setFormError(err.response?.data?.message || 'Could not save the post.');
+      setFormError(err.response?.data?.error || err.response?.data?.message || 'Could not save the post.');
     } finally {
       setSaving(false);
     }

@@ -41,7 +41,7 @@ export default function CommentSection({ postId }) {
       setComments((prev) => [...prev, data]);
       setText('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not post your comment.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Could not post your comment.');
     } finally {
       setPosting(false);
     }

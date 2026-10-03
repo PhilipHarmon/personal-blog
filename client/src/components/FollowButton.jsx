@@ -36,7 +36,7 @@ export default function FollowButton({ compact = false }) {
       setFollowing(data.following);
       setFollowerCount(data.followerCount);
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not update follow status.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Could not update follow status.');
     } finally {
       setBusy(false);
     }
