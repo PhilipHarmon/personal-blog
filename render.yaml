@@ -1,0 +1,42 @@
+# Render blueprint for Philip's blog
+# Deploy: connect this repo in the Render dashboard -> New -> Blueprint -> select render.yaml.
+# Deploy order matters: the API must exist before the client so you know its URL.
+
+services:
+  # ---- Backend API (Node + Express + MongoDB) ----
+  - type: web
+    name: philip-blog-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    # seed.js is idempotent: creates the admin from ADMIN_EMAIL/ADMIN_PASSWORD
+    # and a welcome post on first run, no-ops afterwards.
+    preDeployCommand: npm run seed
+    healthCheckPath: /api/posts
+    envVars:
+      - key: MONGO_URI
+        sync: false # paste your MongoDB Atlas M0 connection string in the dashboard
+      - key: JWT_SECRET
+        generateValue: true # long random value, generated once
+      - key: CLIENT_URL
+        sync: false # set AFTER the client deploys, e.g. https://philip-blog-client.onrender.com
+      - key: ADMIN_EMAIL
+        sync: false # your login email for /admin
+      - key: ADMIN_PASSWORD
+        sync: false # your admin password (used by the seed script)
+
+  # ---- Frontend (React + Vite static site) ----
+  - type: web
+    name: philip-blog-client
+    runtime: static
+    rootDir: client
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false # set AFTER the API deploys, e.g. https://philip-blog-api.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
