@@ -1,7 +1,7 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth.jsx";
-import FollowButton from "./FollowButton.jsx";
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth.jsx';
+import FollowButton from './FollowButton.jsx';
 
 export default function Header() {
   const { user, logout, isAdmin } = useAuth();
@@ -9,7 +9,7 @@ export default function Header() {
 
   function handleLogout() {
     logout();
-    navigate("/");
+    navigate('/');
   }
 
   return (
@@ -17,8 +17,7 @@ export default function Header() {
       <div className="header-inner">
         <Link to="/" className="site-title">
           Mindless Musings:
-          <br />
-          Quirky Blog
+          <br />A Quirky Blog
         </Link>
         <nav className="site-nav">
           <Link to="/">Home</Link>

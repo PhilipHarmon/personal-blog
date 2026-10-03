@@ -25,6 +25,18 @@ services:
         sync: false # your login email for /admin
       - key: ADMIN_PASSWORD
         sync: false # your admin password (used by the seed script)
+      # Contact-form email notifications (Gmail + App Password recommended).
+      # Leave unset to skip email notifications (messages still save to the DB).
+      - key: SMTP_HOST
+        sync: false # e.g. smtp.gmail.com
+      - key: SMTP_PORT
+        sync: false # e.g. 587
+      - key: SMTP_USER
+        sync: false # your Gmail address
+      - key: SMTP_PASS
+        sync: false # Gmail App Password (NOT your regular password)
+      - key: NOTIFY_EMAIL
+        sync: false # where notifications go; defaults to ADMIN_EMAIL
 
   # ---- Frontend (React + Vite static site) ----
   - type: web

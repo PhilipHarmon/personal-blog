@@ -1,6 +1,7 @@
 const express = require('express');
 const Message = require('../models/Message');
 const { authRequired, requireAdmin } = require('../middleware/auth');
+const { sendContactNotification } = require('../mailer');
 
 const router = express.Router();
 
@@ -22,6 +23,14 @@ router.post('/', async (req, res, next) => {
     }
 
     await Message.create({
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      message: message.trim(),
+    });
+
+    // Notify Philip by email. Fire-and-forget: a mail failure must never
+    // lose the message or fail the request.
+    sendContactNotification({
       name: name.trim(),
       email: email.toLowerCase().trim(),
       message: message.trim(),
