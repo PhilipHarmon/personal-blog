@@ -195,6 +195,24 @@ img {
   margin: 2rem 0 0;
 }
 
+.social-links {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.social-links a {
+  color: #d8cdb8;
+  display: inline-flex;
+  padding: 0.4rem;
+  border: 1px solid #5a5145;
+  border-radius: 999px;
+  line-height: 0;
+}
+.social-links a:hover {
+  color: #fff;
+  border-color: #8a7d68;
+}
+
 /* ---------- buttons ---------- */
 
 .btn {

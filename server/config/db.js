@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 // Global plugin: every model serializes with a clean `id` field instead of
-// Mongo's `_id` (the client uses `id` everywhere).
+// Mongo's `_id` (the client uses `id` everywhere). Must be registered before
+// any model file is loaded — db.js is required first by server.js and seed.js.
 mongoose.plugin((schema) => {
   schema.set('toJSON', {
     transform: (doc, ret) => {
@@ -14,7 +15,6 @@ mongoose.plugin((schema) => {
     },
   });
 });
-
 
 // Connect to MongoDB using MONGO_URI from the environment.
 async function connectDB() {

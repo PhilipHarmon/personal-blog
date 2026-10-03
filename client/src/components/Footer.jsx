@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import SubscribeForm from './SubscribeForm.jsx';
+import SocialLinks from './SocialLinks.jsx';
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -10,6 +11,7 @@ export default function Footer() {
         <div className="footer-col">
           <h3>Philip's Blog</h3>
           <p className="muted">Writing, reading, family life, and learning software in Raleigh, NC.</p>
+          <SocialLinks />
         </div>
         <div className="footer-col">
           <h4>Explore</h4>
