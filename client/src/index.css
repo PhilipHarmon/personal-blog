@@ -925,3 +925,12 @@ textarea {
   color: #fff;
   text-decoration: none;
 }
+.social-links .social-letter {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
