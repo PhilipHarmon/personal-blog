@@ -72,8 +72,9 @@ export default function Home() {
       <section className="hero">
         <h1>Mindless Musings: A Quirky Blog</h1>
         <p className="hero-sub">
-          Thoughts on writing, reading, fatherhood, music, nostalgia,
-          bartending, and all points in between — from Raleigh, North Carolina.
+          Thoughts on writing, reading, fatherhood, music, Gen Xnostalgia,
+          bartending, getting older, and all points in between — from Raleigh,
+          North Carolina.
         </p>
       </section>
 

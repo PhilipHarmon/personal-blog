@@ -10,9 +10,10 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="footer-inner">
         <div className="footer-col">
-          <h3>Philip's Blog</h3>
+          <h3>Mindless Musings: A Quirky Blog</h3>
           <p className="muted">
-            Writing, reading, family life, and learning software in Raleigh, NC.
+            Bringing you the most randomly insightful and humorously
+            enlightening musings from Raleigh, NC.
           </p>
           <SocialLinks />
           {donationUrl && (
@@ -41,7 +42,7 @@ export default function Footer() {
         </div>
       </div>
       <p className="footer-copy">
-        © {year} Philip Culpepper. All rights reserved.
+        © {year} Philip Harmon. All rights reserved.
       </p>
     </footer>
   );
