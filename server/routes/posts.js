@@ -9,7 +9,7 @@ const { notifySubscribers } = require("../notifySubscribers");
 
 const router = express.Router();
 
-const SHARE_PLATFORMS = ["x", "facebook", "link", "other"];
+const SHARE_PLATFORMS = ["x", "facebook", "link", "other", "threads", "tumblr"];
 
 // --- helpers ---------------------------------------------------------------
 
@@ -161,6 +161,8 @@ router.get("/:slug", optionalAuth, async (req, res, next) => {
         facebook: shareDoc ? shareDoc.facebook : 0,
         link: shareDoc ? shareDoc.link : 0,
         other: shareDoc ? shareDoc.other : 0,
+        threads: shareDoc && shareDoc.threads ? shareDoc.threads : 0,
+        tumblr: shareDoc && shareDoc.tumblr ? shareDoc.tumblr : 0,
       },
     });
   } catch (err) {
@@ -386,7 +388,10 @@ router.post("/:id/share", async (req, res, next) => {
     if (!SHARE_PLATFORMS.includes(platform)) {
       return res
         .status(400)
-        .json({ error: "Platform must be one of: x, facebook, link, other" });
+        .json({
+          error:
+            "Platform must be one of: x, facebook, link, other, threads, tumblr",
+        });
     }
 
     const shareDoc = await ShareCount.findOneAndUpdate(
@@ -397,10 +402,12 @@ router.post("/:id/share", async (req, res, next) => {
 
     return res.json({
       shareCounts: {
-        x: shareDoc.x,
-        facebook: shareDoc.facebook,
-        link: shareDoc.link,
-        other: shareDoc.other,
+        x: shareDoc.x || 0,
+        facebook: shareDoc.facebook || 0,
+        link: shareDoc.link || 0,
+        other: shareDoc.other || 0,
+        threads: shareDoc.threads || 0,
+        tumblr: shareDoc.tumblr || 0,
       },
     });
   } catch (err) {
