@@ -1,10 +1,12 @@
-<<<<<<< HEAD
-# Philip's Blog
+# Philip's Blog — Mindless Musings: A Quirky Blog
 
 A complete, full-stack personal blog — dynamic single-page React app on the
 front end, Express + MongoDB API on the back end. Readers can register, follow
 the blog, subscribe by email, like posts, comment, and share. Philip (admin)
 gets a full dashboard for writing posts and moderating the community.
+
+Live at: `https://personal-blog-client.onrender.com`
+(API: `https://personal-blog-api-w7m3.onrender.com/api`)
 
 ## Features
 
@@ -14,12 +16,23 @@ gets a full dashboard for writing posts and moderating the community.
 - Like posts (toggle), comment on posts, delete own comments
 - Share via X, Facebook, copy-link, or the native Web Share API — every share is counted
 - Follow the blog (follower count shown in the header) and subscribe by email
-- Contact form to send Philip a message
+- **Welcome email** on subscribing, and **new-post email alerts** whenever a post goes live
+- One-click **unsubscribe** from any email (`/unsubscribe?token=…`)
+- Contact form to send Philip a message (Philip also gets an email notification)
 
 **Admin (Philip)**
 - Dashboard with stats: posts, subscribers, followers, comments, messages
-- Write, edit, publish/unpublish, and delete posts (Markdown editor)
+- Write, edit, publish/unpublish, and delete posts — Markdown editor with a
+  formatting **toolbar** (bold, italic, heading, quote, link, image, YouTube)
+- Paste any YouTube link and it **embeds as a video player** in the published post
 - Moderate comments, view subscriber list, read contact messages
+- Publishing a post (or flipping a draft to published) emails all subscribers automatically
+
+**Site chrome**
+- Two-line site title, footer social icons (X, Instagram, Facebook, GitHub,
+  LinkedIn, YouTube, Threads, Reddit, Flickr, Tumblr, Spotify — with an
+  initial-letter fallback for anything else), and an optional "Support this
+  blog" donation button configured in `client/src/siteConfig.js`
 
 ## Project structure
 
@@ -32,9 +45,12 @@ blog-site/
 │   ├── .env.example
 │   ├── server.js          # app setup, route mounting, error handler
 │   ├── seed.js            # idempotent admin + welcome-post seeding
-│   ├── config/db.js
+│   ├── mailer.js          # nodemailer: contact + welcome + new-post emails
+│   ├── notifySubscribers.js # background fan-out of new-post alerts
+│   ├── config/db.js       # Mongo connection + global _id -> id plugin
 │   ├── middleware/auth.js # JWT auth + admin guard
-│   ├── models/            # User, Post, Like, Comment, ShareCount, Subscriber, Follow, Message
+│   ├── models/            # User, Post, Like, Comment, ShareCount,
+│   │                      # Subscriber (+unsubscribeToken), Follow, Message
 │   └── routes/            # auth, posts, comments, follow, subscribe, contact, admin
 └── client/                # Frontend: React 18 + Vite
     ├── Dockerfile         # multi-stage build -> nginx static serve
@@ -43,10 +59,13 @@ blog-site/
     └── src/
         ├── api.js         # axios instance (VITE_API_URL)
         ├── auth.jsx       # AuthContext + localStorage token
+        ├── siteConfig.js  # social links, donation URL, site settings
         ├── components/    # Header, Footer, PostCard, LikeButton, ShareButtons,
-        │                  # CommentSection, FollowButton, SubscribeForm, ProtectedRoute
+        │                  # CommentSection, FollowButton, SubscribeForm,
+        │                  # ProtectedRoute, SocialLinks, Markdown,
+        │                  # MarkdownToolbar
         ├── pages/         # Home, PostDetail, About, Contact, Login, Register,
-        │                  # Subscribe, Admin
+        │                  # Subscribe, Unsubscribe, Admin
         └── index.css      # single global stylesheet
 ```
 
@@ -90,15 +109,33 @@ Base: `http://localhost:5000/api`. Auth: `Authorization: Bearer <token>`.
 | GET /posts?tag=&search=&page=&limit= | public | published posts, newest first |
 | GET /posts/all | admin | everything incl. drafts |
 | GET /posts/:slug | public | post + likeCount, commentCount, shareCounts |
-| POST /posts, PUT /posts/:id, DELETE /posts/:id | admin | manage posts (slug auto-generated) |
+| POST /posts, PUT /posts/:id, DELETE /posts/:id | admin | manage posts (slug auto-generated); publishing notifies subscribers |
 | POST /posts/:id/like | token | toggle like -> {liked, likeCount} |
 | GET /posts/:id/comments, POST /posts/:id/comments | public / token | read + write comments |
 | DELETE /comments/:id | owner or admin | remove a comment |
 | POST /posts/:id/share {platform} | public | count a share (x\|facebook\|link\|other) |
 | POST /follow, GET /follow/count | token / public | follow the blog |
-| POST /subscribe {email}, GET /subscribers | public / admin | email subscriptions |
-| POST /contact, GET /contact | public / admin | contact messages |
+| POST /subscribe {email} | public | email subscription (+ welcome email for new signups) |
+| GET /subscribe | admin | subscriber list, newest first |
+| GET /subscribe/unsubscribe/:token | public | one-click unsubscribe |
+| POST /contact, GET /contact | public / admin | contact messages (+ email notification to Philip) |
 | GET /admin/stats | admin | dashboard counters |
+
+## Email setup (optional but recommended)
+
+Welcome emails, new-post alerts, and contact notifications all send through
+SMTP (Gmail works fine with an App Password — never use your real password).
+If the SMTP vars aren't set, everything still works; emails are just skipped.
+
+**Server** env vars:
+
+| Var | Required | Purpose |
+|---|---|---|
+| `SMTP_HOST` | for email | e.g. `smtp.gmail.com` |
+| `SMTP_PORT` | for email | `587` (or `465`) |
+| `SMTP_USER` | for email | your Gmail address (the "from" address) |
+| `SMTP_PASS` | for email | Gmail App Password |
+| `NOTIFY_EMAIL` | no | where contact-form notifications go (defaults to `ADMIN_EMAIL`) |
 
 ## Deployment
 
@@ -119,15 +156,14 @@ services. In the Render dashboard: **New -> Blueprint**, point it at this repo.
 **Order matters** (each URL is needed by the other side):
 
 1. Deploy the Blueprint. Set `MONGO_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` on
-   `philip-blog-api` when prompted (`JWT_SECRET` is auto-generated).
+   the API service when prompted (`JWT_SECRET` is auto-generated).
 2. The seed script runs automatically before each deploy (`preDeployCommand`)
    and creates your admin account from `ADMIN_EMAIL`/`ADMIN_PASSWORD`.
-3. Once the API is live (e.g. `https://philip-blog-api.onrender.com`), set
-   `VITE_API_URL=https://philip-blog-api.onrender.com/api` on
-   `philip-blog-client` and trigger a redeploy.
-4. Once the client is live (e.g. `https://philip-blog-client.onrender.com`),
-   set `CLIENT_URL` to that origin on `philip-blog-api` and redeploy the API
-   (this locks CORS to your frontend).
+3. Once the API is live, set `VITE_API_URL=<api-url>/api` on the client
+   service and trigger a redeploy.
+4. Once the client is live, set `CLIENT_URL` to that origin on the API
+   service and redeploy the API (this locks CORS to your frontend).
+5. For emails: set the `SMTP_*` vars (above) on the API service.
 
 Note: Render's free tier spins services down after inactivity, so the first
 request after idle can take ~30-60s to wake up.
@@ -146,7 +182,7 @@ request after idle can take ~30-60s to wake up.
 
 ### Production environment variables
 
-**Server** (`philip-blog-api`):
+**Server** (API service):
 
 | Var | Required | Purpose |
 |---|---|---|
@@ -155,27 +191,25 @@ request after idle can take ~30-60s to wake up.
 | `CLIENT_URL` | yes | frontend origin(s), comma-separated, for CORS |
 | `ADMIN_EMAIL` | yes | admin login (used by seed) |
 | `ADMIN_PASSWORD` | yes | admin password (used by seed) |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | for email | see Email setup above |
+| `NOTIFY_EMAIL` | no | contact-form notification recipient |
 | `PORT` | no | defaults to 5000 (hosts usually inject their own) |
 
-**Client** (`philip-blog-client`):
+**Client**:
 
 | Var | Required | Purpose |
 |---|---|---|
-| `VITE_API_URL` | yes | full API base URL, e.g. `https://philip-blog-api.onrender.com/api` |
+| `VITE_API_URL` | yes | full API base URL, e.g. `https://personal-blog-api-w7m3.onrender.com/api` |
 
 Vite bakes `VITE_API_URL` into the bundle **at build time** — changing it
 requires a rebuild/redeploy of the client. Locally, copy `client/.env.example`
 to `client/.env` or rely on the `http://localhost:5000/api` fallback.
 
-## What Philip needs to do
+## Customization
 
-1. Install MongoDB locally **or** create the free Atlas M0 cluster above.
-2. Fill in `server/.env` (from `.env.example`) — at minimum `ADMIN_EMAIL` and
-   `ADMIN_PASSWORD`.
-3. `npm install`, `npm run seed`, `npm start` in `server/`; `npm install`,
-   `npm run dev` in `client/`.
-4. Open `http://localhost:5173`, log in, visit `/admin`, and write the first
-   real post.
-=======
-# personal-blog
->>>>>>> fa136a7 (Initial commit)
+- **Site title / header**: `client/src/components/Header.jsx`
+- **About page text**: `client/src/pages/About.jsx`
+- **Footer**: `client/src/components/Footer.jsx`
+- **Social links + donation URL**: `client/src/siteConfig.js` — set
+  `donationUrl` to your Square/PayPal link (empty string hides the button)
+- **Styles**: `client/src/index.css`
