@@ -1,30 +1,36 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const Post = require('../models/Post');
-const Like = require('../models/Like');
-const Comment = require('../models/Comment');
-const ShareCount = require('../models/ShareCount');
-const { authRequired, requireAdmin } = require('../middleware/auth');
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const Post = require("../models/Post");
+const Like = require("../models/Like");
+const Comment = require("../models/Comment");
+const ShareCount = require("../models/ShareCount");
+const { authRequired, requireAdmin } = require("../middleware/auth");
+const { notifySubscribers } = require("../notifySubscribers");
 
 const router = express.Router();
 
-const SHARE_PLATFORMS = ['x', 'facebook', 'link', 'other'];
+const SHARE_PLATFORMS = ["x", "facebook", "link", "other"];
 
 // --- helpers ---------------------------------------------------------------
 
 function slugify(title) {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'post';
+  return (
+    title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "post"
+  );
 }
 
 // Returns a slug guaranteed unique in the posts collection.
 async function uniqueSlug(base, excludeId) {
   let slug = base;
   let n = 2;
-  const filter = () => ({ slug, ...(excludeId ? { _id: { $ne: excludeId } } : {}) });
+  const filter = () => ({
+    slug,
+    ...(excludeId ? { _id: { $ne: excludeId } } : {}),
+  });
   while (await Post.exists(filter())) {
     slug = `${base}-${n}`;
     n += 1;
@@ -34,9 +40,9 @@ async function uniqueSlug(base, excludeId) {
 
 // Attaches req.user when a valid Bearer token is present; otherwise leaves it unset.
 function optionalAuth(req, res, next) {
-  const header = req.headers.authorization || '';
-  const [scheme, token] = header.split(' ');
-  if (scheme === 'Bearer' && token) {
+  const header = req.headers.authorization || "";
+  const [scheme, token] = header.split(" ");
+  if (scheme === "Bearer" && token) {
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET);
       req.user = { id: payload.id, role: payload.role };
@@ -53,22 +59,25 @@ function isValidId(id) {
 
 // --- GET /api/posts?tag=&search=&page=&limit= (public, published only) ------
 
-router.get('/', async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
     const { tag, search } = req.query;
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 10));
+    const limit = Math.max(
+      1,
+      Math.min(100, parseInt(req.query.limit, 10) || 10),
+    );
 
     const filter = { published: true };
     if (tag) filter.tags = tag;
     if (search) {
-      const re = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      const re = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
       filter.$or = [{ title: re }, { content: re }, { excerpt: re }];
     }
 
     const total = await Post.countDocuments(filter);
     const posts = await Post.find(filter)
-      .populate('author', 'name')
+      .populate("author", "name")
       .sort({ publishedAt: -1, createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -81,10 +90,10 @@ router.get('/', async (req, res, next) => {
 
 // --- GET /api/posts/all (admin: every post, incl. drafts) -------------------
 
-router.get('/all', authRequired, requireAdmin, async (req, res, next) => {
+router.get("/all", authRequired, requireAdmin, async (req, res, next) => {
   try {
     const posts = await Post.find({})
-      .populate('author', 'name')
+      .populate("author", "name")
       .sort({ createdAt: -1 });
     return res.json(posts);
   } catch (err) {
@@ -94,15 +103,18 @@ router.get('/all', authRequired, requireAdmin, async (req, res, next) => {
 
 // --- GET /api/posts/:slug (public) ------------------------------------------
 
-router.get('/:slug', optionalAuth, async (req, res, next) => {
+router.get("/:slug", optionalAuth, async (req, res, next) => {
   try {
-    const post = await Post.findOne({ slug: req.params.slug }).populate('author', 'name');
+    const post = await Post.findOne({ slug: req.params.slug }).populate(
+      "author",
+      "name",
+    );
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
-    const isAdmin = req.user && req.user.role === 'admin';
+    const isAdmin = req.user && req.user.role === "admin";
     if (!post.published && !isAdmin) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     const [likeCount, commentCount, shareDoc] = await Promise.all([
@@ -129,12 +141,13 @@ router.get('/:slug', optionalAuth, async (req, res, next) => {
 
 // --- POST /api/posts (admin) ------------------------------------------------
 
-router.post('/', authRequired, requireAdmin, async (req, res, next) => {
+router.post("/", authRequired, requireAdmin, async (req, res, next) => {
   try {
-    const { title, content, excerpt, tags, coverImage, published } = req.body || {};
+    const { title, content, excerpt, tags, coverImage, published } =
+      req.body || {};
 
     if (!title || !content) {
-      return res.status(400).json({ error: 'Title and content are required' });
+      return res.status(400).json({ error: "Title and content are required" });
     }
 
     const slug = await uniqueSlug(slugify(title));
@@ -144,13 +157,20 @@ router.post('/', authRequired, requireAdmin, async (req, res, next) => {
       title: title.trim(),
       slug,
       content,
-      excerpt: excerpt || '',
-      tags: Array.isArray(tags) ? tags.map((t) => String(t).trim()).filter(Boolean) : [],
-      coverImage: coverImage || '',
+      excerpt: excerpt || "",
+      tags: Array.isArray(tags)
+        ? tags.map((t) => String(t).trim()).filter(Boolean)
+        : [],
+      coverImage: coverImage || "",
       author: req.user.id,
       published: isPublished,
       publishedAt: isPublished ? new Date() : undefined,
     });
+
+    if (isPublished) {
+      // Notify subscribers in the background; never blocks the response.
+      notifySubscribers(post);
+    }
 
     return res.status(201).json(post);
   } catch (err) {
@@ -160,22 +180,24 @@ router.post('/', authRequired, requireAdmin, async (req, res, next) => {
 
 // --- PUT /api/posts/:id (admin) ---------------------------------------------
 
-router.put('/:id', authRequired, requireAdmin, async (req, res, next) => {
+router.put("/:id", authRequired, requireAdmin, async (req, res, next) => {
   try {
     if (!isValidId(req.params.id)) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
     const post = await Post.findById(req.params.id);
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
 
-    const { title, content, excerpt, tags, coverImage, published } = req.body || {};
+    const { title, content, excerpt, tags, coverImage, published } =
+      req.body || {};
+    const wasPublished = post.published;
 
     // Regenerate the slug only when the title changed.
     if (title !== undefined && title !== post.title) {
       if (!title) {
-        return res.status(400).json({ error: 'Title cannot be empty' });
+        return res.status(400).json({ error: "Title cannot be empty" });
       }
       post.title = title.trim();
       post.slug = await uniqueSlug(slugify(post.title), post._id);
@@ -184,7 +206,9 @@ router.put('/:id', authRequired, requireAdmin, async (req, res, next) => {
     if (excerpt !== undefined) post.excerpt = excerpt;
     if (coverImage !== undefined) post.coverImage = coverImage;
     if (tags !== undefined) {
-      post.tags = Array.isArray(tags) ? tags.map((t) => String(t).trim()).filter(Boolean) : [];
+      post.tags = Array.isArray(tags)
+        ? tags.map((t) => String(t).trim()).filter(Boolean)
+        : [];
     }
     if (published !== undefined) {
       const nowPublished = published === true;
@@ -195,6 +219,10 @@ router.put('/:id', authRequired, requireAdmin, async (req, res, next) => {
     }
 
     await post.save();
+    if (published === true && !wasPublished) {
+      // Draft just went live — notify subscribers in the background.
+      notifySubscribers(post);
+    }
     return res.json(post);
   } catch (err) {
     return next(err);
@@ -203,14 +231,14 @@ router.put('/:id', authRequired, requireAdmin, async (req, res, next) => {
 
 // --- DELETE /api/posts/:id (admin) ------------------------------------------
 
-router.delete('/:id', authRequired, requireAdmin, async (req, res, next) => {
+router.delete("/:id", authRequired, requireAdmin, async (req, res, next) => {
   try {
     if (!isValidId(req.params.id)) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
     const post = await Post.findById(req.params.id);
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     await Promise.all([
@@ -228,14 +256,14 @@ router.delete('/:id', authRequired, requireAdmin, async (req, res, next) => {
 
 // --- POST /api/posts/:id/like (toggle, auth) --------------------------------
 
-router.post('/:id/like', authRequired, async (req, res, next) => {
+router.post("/:id/like", authRequired, async (req, res, next) => {
   try {
     if (!isValidId(req.params.id)) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
     const post = await Post.findById(req.params.id);
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     const existing = await Like.findOne({ post: post._id, user: req.user.id });
@@ -257,24 +285,24 @@ router.post('/:id/like', authRequired, async (req, res, next) => {
 
 // --- GET /api/posts/:id/comments (public, oldest first) ----------------------
 
-router.get('/:id/comments', async (req, res, next) => {
+router.get("/:id/comments", async (req, res, next) => {
   try {
     if (!isValidId(req.params.id)) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
     const post = await Post.findById(req.params.id);
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     const comments = await Comment.find({ post: post._id })
-      .populate('user', 'name')
+      .populate("user", "name")
       .sort({ createdAt: 1 });
 
     return res.json(
       comments.map((c) => ({
         id: c._id.toString(),
-        user: { name: c.user ? c.user.name : 'Unknown' },
+        user: { name: c.user ? c.user.name : "Unknown" },
         text: c.text,
         createdAt: c.createdAt,
       })),
@@ -286,19 +314,19 @@ router.get('/:id/comments', async (req, res, next) => {
 
 // --- POST /api/posts/:id/comments (auth) ------------------------------------
 
-router.post('/:id/comments', authRequired, async (req, res, next) => {
+router.post("/:id/comments", authRequired, async (req, res, next) => {
   try {
     if (!isValidId(req.params.id)) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
     const post = await Post.findById(req.params.id);
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     const { text } = req.body || {};
     if (!text || !text.trim()) {
-      return res.status(400).json({ error: 'Comment text is required' });
+      return res.status(400).json({ error: "Comment text is required" });
     }
 
     const comment = await Comment.create({
@@ -315,21 +343,21 @@ router.post('/:id/comments', authRequired, async (req, res, next) => {
 
 // --- POST /api/posts/:id/share (public) -------------------------------------
 
-router.post('/:id/share', async (req, res, next) => {
+router.post("/:id/share", async (req, res, next) => {
   try {
     if (!isValidId(req.params.id)) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
     const post = await Post.findById(req.params.id);
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     const { platform } = req.body || {};
     if (!SHARE_PLATFORMS.includes(platform)) {
       return res
         .status(400)
-        .json({ error: 'Platform must be one of: x, facebook, link, other' });
+        .json({ error: "Platform must be one of: x, facebook, link, other" });
     }
 
     const shareDoc = await ShareCount.findOneAndUpdate(
