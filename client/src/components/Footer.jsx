@@ -1,8 +1,8 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import SubscribeForm from './SubscribeForm.jsx';
-import SocialLinks from './SocialLinks.jsx';
-import { donationUrl } from '../siteConfig.js';
+import React from "react";
+import { Link } from "react-router-dom";
+import SubscribeForm from "./SubscribeForm.jsx";
+import SocialLinks from "./SocialLinks.jsx";
+import { donationUrl } from "../siteConfig.js";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -10,8 +10,11 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="footer-inner">
         <div className="footer-col">
-          <h3>Philip's Blog</h3>
-          <p className="muted">Writing, reading, family life, and learning software in Raleigh, NC.</p>
+          <h3>Mindless Musings: A Quirky Blog</h3>
+          <p className="muted">
+            Bringing you the most randomly insightful and humorously
+            enlightening musings from Raleigh, NC.
+          </p>
           <SocialLinks />
           {donationUrl && (
             <a
@@ -38,7 +41,9 @@ export default function Footer() {
           <SubscribeForm inline />
         </div>
       </div>
-      <p className="footer-copy">© {year} Philip Culpepper. All rights reserved.</p>
+      <p className="footer-copy">
+        © {year} Philip Harmon. All rights reserved.
+      </p>
     </footer>
   );
 }
