@@ -82,7 +82,34 @@ router.get("/", async (req, res, next) => {
       .skip((page - 1) * limit)
       .limit(limit);
 
-    return res.json({ posts, total, page, pages: Math.ceil(total / limit) });
+    // Attach like/comment counts so cards show real numbers.
+    const postIds = posts.map((p) => p._id);
+    const [likeAgg, commentAgg] = await Promise.all([
+      Like.aggregate([
+        { $match: { post: { $in: postIds } } },
+        { $group: { _id: "$post", count: { $sum: 1 } } },
+      ]),
+      Comment.aggregate([
+        { $match: { post: { $in: postIds } } },
+        { $group: { _id: "$post", count: { $sum: 1 } } },
+      ]),
+    ]);
+    const likeMap = new Map(likeAgg.map((l) => [l._id.toString(), l.count]));
+    const commentMap = new Map(
+      commentAgg.map((c) => [c._id.toString(), c.count]),
+    );
+    const enriched = posts.map((p) => ({
+      ...p.toObject(),
+      likeCount: likeMap.get(p._id.toString()) || 0,
+      commentCount: commentMap.get(p._id.toString()) || 0,
+    }));
+
+    return res.json({
+      posts: enriched,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    });
   } catch (err) {
     return next(err);
   }
@@ -117,16 +144,18 @@ router.get("/:slug", optionalAuth, async (req, res, next) => {
       return res.status(404).json({ error: "Post not found" });
     }
 
-    const [likeCount, commentCount, shareDoc] = await Promise.all([
+    const [likeCount, commentCount, shareDoc, likedByMe] = await Promise.all([
       Like.countDocuments({ post: post._id }),
       Comment.countDocuments({ post: post._id }),
       ShareCount.findOne({ post: post._id }),
+      req.user ? Like.exists({ post: post._id, user: req.user.id }) : null,
     ]);
 
     return res.json({
       ...post.toObject(),
       likeCount,
       commentCount,
+      likedByMe: !!likedByMe,
       shareCounts: {
         x: shareDoc ? shareDoc.x : 0,
         facebook: shareDoc ? shareDoc.facebook : 0,
