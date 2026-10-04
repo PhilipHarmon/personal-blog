@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 // Global plugin: every model serializes with a clean `id` field instead of
 // Mongo's `_id` (the client uses `id` everywhere). Must be registered before
@@ -13,20 +13,18 @@ mongoose.plugin((schema) => {
     delete ret.__v;
     return ret;
   };
-  schema.set("toJSON", { transform });
-  schema.set("toObject", { transform });
+  schema.set('toJSON', { transform });
+  schema.set('toObject', { transform });
 });
 
 // Connect to MongoDB using MONGO_URI from the environment.
 async function connectDB() {
   const uri = process.env.MONGO_URI;
   if (!uri) {
-    throw new Error(
-      "MONGO_URI is not set. Copy .env.example to .env and fill it in.",
-    );
+    throw new Error('MONGO_URI is not set. Copy .env.example to .env and fill it in.');
   }
   await mongoose.connect(uri, { serverSelectionTimeoutMS: 10000 });
-  console.log("MongoDB connected");
+  console.log('MongoDB connected');
 }
 
 module.exports = connectDB;

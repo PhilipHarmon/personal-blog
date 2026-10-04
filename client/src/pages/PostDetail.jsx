@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
+import Markdown from '../components/Markdown.jsx';
 import api from '../api.js';
 import LikeButton from '../components/LikeButton.jsx';
 import ShareButtons from '../components/ShareButtons.jsx';
@@ -82,7 +82,7 @@ export default function PostDetail() {
         <img className="post-cover" src={post.coverImage} alt={post.title} loading="lazy" />
       )}
       <div className="post-body">
-        <ReactMarkdown>{post.content}</ReactMarkdown>
+        <Markdown>{post.content}</Markdown>
       </div>
 
       <div className="post-actions">

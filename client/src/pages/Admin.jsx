@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import api from '../api.js';
 import { formatDate } from '../components/PostCard.jsx';
+import MarkdownToolbar from '../components/MarkdownToolbar.jsx';
 
 const EMPTY_FORM = {
   title: '',
@@ -26,6 +27,7 @@ export default function Admin() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
+  const contentRef = useRef(null);
 
   const loadDashboard = useCallback(async () => {
     setLoading(true);
@@ -250,8 +252,14 @@ export default function Admin() {
             </div>
             <div className="field">
               <label htmlFor="ed-content">Content (markdown)</label>
+              <MarkdownToolbar
+                textareaRef={contentRef}
+                value={form.content}
+                onChange={(content) => setForm((f) => ({ ...f, content }))}
+              />
               <textarea
                 id="ed-content"
+                ref={contentRef}
                 rows={14}
                 required
                 value={form.content}
