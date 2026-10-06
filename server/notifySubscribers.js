@@ -1,16 +1,16 @@
-const crypto = require("crypto");
-const Subscriber = require("./models/Subscriber");
-const { sendNewPostEmail } = require("./mailer");
+const crypto = require('crypto');
+const Subscriber = require('./models/Subscriber');
+const { sendNewPostEmail } = require('./mailer');
 
 function siteUrl() {
-  return (process.env.CLIENT_URL || "").replace(/\/$/, "");
+  return (process.env.CLIENT_URL || '').replace(/\/$/, '');
 }
 
 // Lazily issues an unsubscribe token for subscribers created before
 // tokens existed.
 async function ensureUnsubscribeToken(sub) {
   if (!sub.unsubscribeToken) {
-    sub.unsubscribeToken = crypto.randomBytes(24).toString("hex");
+    sub.unsubscribeToken = crypto.randomBytes(24).toString('hex');
     await sub.save();
   }
   return sub.unsubscribeToken;
@@ -22,7 +22,7 @@ async function notifySubscribers(post) {
   try {
     const subs = await Subscriber.find({});
     if (!subs.length) {
-      console.log("New-post notification: no subscribers, skipping");
+      console.log('New-post notification: no subscribers, skipping');
       return;
     }
     const base = siteUrl();
@@ -39,11 +39,9 @@ async function notifySubscribers(post) {
       });
       if (result.sent) sent += 1;
     }
-    console.log(
-      `New-post notification: ${sent}/${subs.length} sent for "${post.title}"`,
-    );
+    console.log(`New-post notification: ${sent}/${subs.length} sent for "${post.title}"`);
   } catch (err) {
-    console.error("New-post notification failed:", err.message);
+    console.error('New-post notification failed:', err.message);
   }
 }
 

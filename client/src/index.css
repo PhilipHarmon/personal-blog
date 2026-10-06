@@ -21,10 +21,8 @@
   --info-ink: #2c4f74;
   --radius: 10px;
   --shadow: 0 2px 10px rgba(80, 60, 30, 0.08);
-  --font-serif: Georgia, "Times New Roman", "Noto Serif", serif;
-  --font-sans:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
+  --font-serif: Georgia, 'Times New Roman', 'Noto Serif', serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
@@ -44,25 +42,33 @@ body {
   line-height: 1.65;
 }
 
-h1,
-h2,
-h3,
-h4 {
+/* Never let stray wide content create a horizontal scrollbar.
+   `clip` (not `hidden`) keeps the sticky header working. */
+html, body {
+  overflow-x: clip;
+}
+@supports not (overflow: clip) {
+  html, body { overflow-x: hidden; }
+}
+
+/* Long words, URLs, and emails must wrap so they can't force
+   horizontal scrolling inside cards, comments, and messages. */
+.post-body, .post-card-excerpt, .post-card-title,
+.comment-text, .message p, .simple-list li,
+.admin-post-item strong {
+  overflow-wrap: anywhere;
+}
+
+h1, h2, h3, h4 {
   font-family: var(--font-serif);
   line-height: 1.25;
   margin: 0 0 0.6em;
   color: var(--ink);
 }
 
-h1 {
-  font-size: 2.1rem;
-}
-h2 {
-  font-size: 1.55rem;
-}
-h3 {
-  font-size: 1.25rem;
-}
+h1 { font-size: 2.1rem; }
+h2 { font-size: 1.55rem; }
+h3 { font-size: 1.25rem; }
 
 a {
   color: var(--accent);
@@ -79,20 +85,14 @@ img {
   display: block;
 }
 
-.muted {
-  color: var(--muted);
-}
+.muted { color: var(--muted); }
 
 .sr-only {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
 }
 
 /* ---------- layout ---------- */
@@ -121,8 +121,9 @@ img {
 /* ---------- header ---------- */
 
 .site-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  background: linear-gradient(135deg, #7e3517 0%, #a34a24 55%, #c96a35 100%);
+  border-bottom: none;
+  box-shadow: 0 2px 14px rgba(120, 60, 20, 0.28);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -140,15 +141,13 @@ img {
 
 .site-title {
   font-family: var(--font-serif);
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   font-weight: bold;
-  color: var(--ink);
+  color: #fff8f0;
   text-decoration: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
-.site-title:hover {
-  color: var(--accent);
-  text-decoration: none;
-}
+.site-title:hover { color: #ffe9d2; text-decoration: none; }
 
 .site-nav {
   display: flex;
@@ -156,12 +155,36 @@ img {
   flex-wrap: wrap;
 }
 .site-nav a {
-  color: var(--ink-soft);
-  font-weight: 500;
+  color: #ffe9d2;
+  font-weight: 600;
 }
 .site-nav a:hover {
-  color: var(--accent);
+  color: #ffffff;
 }
+/* Header buttons stay readable on the sunset gradient. */
+.site-header .btn-ghost {
+  color: #ffe9d2;
+  border-color: rgba(255, 233, 210, 0.55);
+}
+.site-header .btn-ghost:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+.site-header .btn-primary {
+  background: #fff8f0;
+  border-color: #fff8f0;
+  color: #7e3517;
+}
+.site-header .btn-primary:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #7e3517;
+}
+/* Cream text keeps the username and follower count readable
+   on the sunset gradient. */
+.site-header .header-user { color: #ffe9d2; }
+.site-header .follow-count { color: #ffe9d2; }
 .nav-admin {
   font-weight: 700;
 }
@@ -172,6 +195,34 @@ img {
   align-items: center;
   gap: 0.6rem;
   flex-wrap: wrap;
+}
+
+/* On wide screens the menu wrapper is invisible: its children take
+   part in the header flex row directly. On small screens it becomes
+   the dropdown panel (see the 720px breakpoint below). */
+.header-menu {
+  display: contents;
+}
+
+.nav-toggle {
+  display: none;
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid rgba(255, 233, 210, 0.55);
+  border-radius: var(--radius);
+  color: #fff8f0;
+  font-size: 1.4rem;
+  line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0.4rem 0.55rem;
+}
+.nav-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }
 
 .header-user {
@@ -195,27 +246,20 @@ img {
   gap: 2rem;
 }
 
-.site-footer h3,
-.site-footer h4 {
+.site-footer h3, .site-footer h4 {
   color: #f5efe3;
   font-family: var(--font-serif);
   margin-bottom: 0.5rem;
 }
-.site-footer .muted {
-  color: #b9ad99;
-}
+.site-footer .muted { color: #b9ad99; }
 
 .footer-nav {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
-.footer-nav a {
-  color: #d8cdb8;
-}
-.footer-nav a:hover {
-  color: #fff;
-}
+.footer-nav a { color: #d8cdb8; }
+.footer-nav a:hover { color: #fff; }
 
 .footer-copy {
   text-align: center;
@@ -242,6 +286,76 @@ img {
   border-color: #8a7d68;
 }
 
+.donate-btn {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.55rem 1.25rem;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.donate-btn:hover {
+  background: var(--accent-dark);
+  color: #fff;
+  text-decoration: none;
+}
+
+.social-links .social-letter {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* ---------- markdown toolbar ---------- */
+.md-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+.md-toolbar-btn {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid #d8cdb8;
+  background: #fffdf8;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--ink);
+}
+.md-toolbar-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- rendered post content ---------- */
+.post-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.video-embed {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  margin: 1.5rem 0;
+}
+.video-embed iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 8px;
+}
+
 /* ---------- buttons ---------- */
 
 .btn {
@@ -255,10 +369,7 @@ img {
   cursor: pointer;
   text-decoration: none;
   line-height: 1.4;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 .btn:disabled {
   opacity: 0.6;
@@ -269,11 +380,7 @@ img {
   background: var(--accent);
   color: #fff;
 }
-.btn-primary:hover {
-  background: var(--accent-dark);
-  color: #fff;
-  text-decoration: none;
-}
+.btn-primary:hover { background: var(--accent-dark); color: #fff; text-decoration: none; }
 
 .btn-ghost {
   background: transparent;
@@ -344,15 +451,12 @@ textarea {
   color: var(--ink);
   width: 100%;
 }
-input:focus,
-textarea:focus {
+input:focus, textarea:focus {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
   border-color: var(--accent);
 }
-textarea {
-  resize: vertical;
-}
+textarea { resize: vertical; }
 
 .field-error {
   color: var(--danger);
@@ -393,10 +497,19 @@ textarea {
 .hero {
   text-align: center;
   margin-bottom: 2rem;
+  background: linear-gradient(135deg, #fdf3e7 0%, #fbe7cf 50%, #f9dcc0 100%);
+  border: 1px solid #f0d4ae;
+  border-radius: 16px;
+  padding: 2.5rem 1.5rem;
+  box-shadow: var(--shadow);
 }
 .hero h1 {
-  font-size: 2.4rem;
+  font-size: clamp(1.7rem, 6vw, 2.4rem);
   margin-bottom: 0.4rem;
+  background: linear-gradient(120deg, #7e3517, #c05f33);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .hero-sub {
   color: var(--ink-soft);
@@ -416,6 +529,19 @@ textarea {
   min-width: 180px;
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+.page-info {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .tag-cloud {
   display: flex;
   flex-wrap: wrap;
@@ -433,26 +559,19 @@ textarea {
   border-radius: 999px;
   margin-right: 0.4rem;
 }
-.tag-list {
-  margin-left: 0.6rem;
-}
+.tag-list { margin-left: 0.6rem; }
 
 .tag-btn {
   border: 1px solid transparent;
   cursor: pointer;
   margin-right: 0;
 }
-.tag-btn:hover {
-  border-color: var(--accent);
-}
+.tag-btn:hover { border-color: var(--accent); }
 .tag-btn.active {
   background: var(--accent);
   color: #fff;
 }
-.tag-count {
-  opacity: 0.7;
-  font-weight: 400;
-}
+.tag-count { opacity: 0.7; font-weight: 400; }
 
 .post-grid {
   display: flex;
@@ -465,6 +584,7 @@ textarea {
 .post-card {
   background: var(--surface);
   border: 1px solid var(--line);
+  border-top: 4px solid #c96a35;
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow);
@@ -474,39 +594,18 @@ textarea {
   height: 220px;
   object-fit: cover;
 }
-.post-card-body {
-  padding: 1.25rem 1.5rem;
-}
-.post-card-title {
-  margin: 0 0 0.4rem;
-  font-size: 1.5rem;
-}
-.post-card-title a {
-  color: var(--ink);
-}
-.post-card-title a:hover {
-  color: var(--accent);
-  text-decoration: none;
-}
-.post-card-meta {
-  color: var(--muted);
-  font-size: 0.88rem;
-  margin: 0 0 0.75rem;
-}
-.post-card-excerpt {
-  color: var(--ink-soft);
-  margin: 0 0 0.75rem;
-}
-.post-card-counts {
-  color: var(--muted);
-  font-size: 0.9rem;
-  margin: 0;
-}
+.post-card-body { padding: 1.25rem 1.5rem; }
+.post-card-title { margin: 0 0 0.4rem; font-size: 1.5rem; }
+.post-card-title a { color: var(--ink); }
+.post-card-title a:hover { color: var(--accent); text-decoration: none; }
+.post-card-meta { color: var(--muted); font-size: 0.88rem; margin: 0 0 0.75rem; }
+.post-card-excerpt { color: var(--ink-soft); margin: 0 0 0.75rem; }
+.post-card-counts { color: var(--muted); font-size: 0.9rem; margin: 0; }
 
 /* ---------- post detail ---------- */
 
 .post-detail .post-title {
-  font-size: 2.3rem;
+  font-size: clamp(1.65rem, 5vw, 2.3rem);
   margin: 0.5rem 0 0.5rem;
 }
 .post-meta {
@@ -527,11 +626,7 @@ textarea {
   line-height: 1.8;
   margin-bottom: 2.5rem;
 }
-.post-body h1,
-.post-body h2,
-.post-body h3 {
-  margin-top: 1.75em;
-}
+.post-body h1, .post-body h2, .post-body h3 { margin-top: 1.75em; }
 .post-body pre {
   background: #2e2a24;
   color: #f0e9db;
@@ -545,11 +640,7 @@ textarea {
   border-radius: 4px;
   font-size: 0.9em;
 }
-.post-body pre code {
-  background: none;
-  padding: 0;
-  color: inherit;
-}
+.post-body pre code { background: none; padding: 0; color: inherit; }
 .post-body blockquote {
   border-left: 3px solid var(--accent);
   margin: 1.25rem 0;
@@ -557,18 +648,20 @@ textarea {
   color: var(--ink-soft);
   font-style: italic;
 }
+.post-body table { border-collapse: collapse; width: 100%; }
+/* A wide markdown table scrolls inside itself instead of
+   blowing out the page on a phone. */
 .post-body table {
-  border-collapse: collapse;
-  width: 100%;
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
-.post-body th,
-.post-body td {
+.post-body th, .post-body td {
   border: 1px solid var(--line);
   padding: 0.5rem 0.75rem;
 }
-.post-body th {
-  background: var(--accent-soft);
-}
+.post-body th { background: var(--accent-soft); }
 
 .post-actions {
   display: flex;
@@ -597,13 +690,8 @@ textarea {
   cursor: pointer;
   color: var(--ink-soft);
 }
-.like-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.like-heart {
-  font-size: 1.25rem;
-}
+.like-btn:hover { border-color: var(--accent); color: var(--accent); }
+.like-heart { font-size: 1.25rem; }
 .like-btn.liked {
   border-color: var(--accent);
   color: var(--accent);
@@ -618,25 +706,13 @@ textarea {
   align-items: center;
   gap: 0.6rem 1rem;
 }
-.share-label {
-  font-weight: 600;
-  color: var(--ink-soft);
-}
-.share-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.share-counts {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
+.share-label { font-weight: 600; color: var(--ink-soft); }
+.share-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.share-counts { color: var(--muted); font-size: 0.9rem; }
 
 /* ---------- comments ---------- */
 
-.comments {
-  margin-top: 2.5rem;
-}
+.comments { margin-top: 2.5rem; }
 .comment-list {
   list-style: none;
   padding: 0;
@@ -651,14 +727,8 @@ textarea {
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
 }
-.comment-head {
-  font-size: 0.92rem;
-  margin-bottom: 0.35rem;
-}
-.comment-text {
-  margin: 0 0 0.5rem;
-  white-space: pre-wrap;
-}
+.comment-head { font-size: 0.92rem; margin-bottom: 0.35rem; }
+.comment-text { margin: 0 0 0.5rem; white-space: pre-wrap; }
 
 .comment-form {
   display: flex;
@@ -666,12 +736,8 @@ textarea {
   gap: 0.6rem;
   max-width: 640px;
 }
-.comment-form label {
-  font-weight: 600;
-}
-.comment-login-prompt {
-  margin-top: 1rem;
-}
+.comment-form label { font-weight: 600; }
+.comment-login-prompt { margin-top: 1rem; }
 
 /* ---------- follow button ---------- */
 
@@ -686,10 +752,7 @@ textarea {
   gap: 0.75rem;
   margin: 1.5rem 0;
 }
-.follow-count {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
+.follow-count { color: var(--muted); font-size: 0.9rem; }
 
 /* ---------- subscribe ---------- */
 
@@ -702,9 +765,7 @@ textarea {
   flex: 1;
   min-width: 200px;
 }
-.subscribe-inline input[type="email"] {
-  background: #fff;
-}
+.subscribe-inline input[type="email"] { background: #fff; }
 .subscribe-panel {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -783,9 +844,7 @@ textarea {
   flex-wrap: wrap;
   margin-bottom: 1rem;
 }
-.admin-row h2 {
-  margin: 0;
-}
+.admin-row h2 { margin: 0; }
 
 .admin-post-list {
   list-style: none;
@@ -809,10 +868,7 @@ textarea {
 .admin-comment-post {
   display: block;
 }
-.admin-post-actions {
-  display: flex;
-  gap: 0.5rem;
-}
+.admin-post-actions { display: flex; gap: 0.5rem; }
 
 .pill {
   display: inline-block;
@@ -860,36 +916,98 @@ textarea {
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
 }
-.message p {
-  margin: 0.35rem 0 0;
-  white-space: pre-wrap;
+.message p { margin: 0.35rem 0 0; white-space: pre-wrap; }
+.message .btn { margin-top: 0.6rem; }
+.replied-badge {
+  display: inline-block;
+  background: var(--success-bg);
+  color: var(--success-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  margin-left: 0.5rem;
 }
+.reply-sent {
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+}
+.reply-composer { margin-top: 0.6rem; }
+.reply-composer textarea {
+  width: 100%;
+  font: inherit;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  resize: vertical;
+}
+.reply-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.reply-actions .btn { margin-top: 0; }
 
 /* ---------- auth pages ---------- */
 
-.auth-page .form {
-  margin-bottom: 1rem;
-}
+.auth-page .form { margin-bottom: 1rem; }
 
 /* ---------- responsive ---------- */
 
 @media (max-width: 720px) {
-  h1 {
-    font-size: 1.75rem;
-  }
-  .hero h1 {
-    font-size: 1.9rem;
-  }
-  .post-detail .post-title {
-    font-size: 1.8rem;
-  }
+  h1 { font-size: 1.75rem; }
 
-  .header-inner {
-    gap: 0.75rem;
+  .header-inner { gap: 0.75rem; position: relative; }
+
+  /* Hamburger: collapse nav + auth into a dropdown panel. */
+  .nav-toggle { display: inline-flex; }
+  .header-menu { display: none; }
+  .header-inner .header-menu.open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: 0.75rem 1.25rem 1.25rem;
+    background: linear-gradient(135deg, #7e3517 0%, #a34a24 55%, #c96a35 100%);
+    box-shadow: 0 14px 26px rgba(80, 35, 10, 0.35);
+    z-index: 20;
   }
-  .header-auth {
+  .header-menu.open .site-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .header-menu.open .site-nav a {
+    display: block;
+    padding: 0.7rem 0.25rem;
+    min-height: 44px;
+    border-bottom: 1px solid rgba(255, 233, 210, 0.25);
+    font-size: 1.05rem;
+  }
+  .header-menu.open .site-nav a:hover {
+    color: #ffffff;
+  }
+  .header-menu.open .header-auth {
     margin-left: 0;
     width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .header-menu.open .header-auth .btn,
+  .header-menu.open .header-auth .follow-inline .btn {
+    width: 100%;
+    min-height: 44px;
+    text-align: center;
+  }
+  .header-menu.open .header-user,
+  .header-menu.open .follow-count {
+    text-align: center;
   }
 
   .footer-inner {
@@ -897,40 +1015,274 @@ textarea {
     gap: 1.5rem;
   }
 
-  .post-card-cover img {
-    height: 170px;
+  .post-card-cover img { height: 170px; }
+
+  .feed-controls .btn { flex: 1; }
+
+  .admin-post-item { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    padding: 1.25rem 0.75rem 3rem;
   }
 
-  .feed-controls .btn {
-    flex: 1;
+  /* Hero */
+  .hero { padding: 1.75rem 1rem; }
+  .hero-sub { font-size: 1rem; }
+
+  /* Post cards */
+  .post-card-body { padding: 1rem 1.1rem; }
+  .post-card-title { font-size: 1.3rem; }
+
+  /* Post detail */
+  .post-body { font-size: 1rem; }
+
+  /* Forms: full-width, thumb-friendly controls */
+  .form .btn,
+  .form-actions .btn,
+  .comment-form .btn {
+    width: 100%;
+    min-height: 48px;
   }
 
-  .admin-post-item {
-    align-items: flex-start;
-    flex-direction: column;
+  /* Tap targets: nothing important under ~44px */
+  .btn-sm { min-height: 44px; padding: 0.55rem 0.95rem; font-size: 0.9rem; }
+  .tab-btn { min-height: 44px; padding: 0.55rem 1.05rem; }
+  .tag-btn { padding: 0.55rem 0.9rem; font-size: 0.9rem; }
+  .md-toolbar-btn { min-height: 44px; padding: 0.5rem 0.85rem; }
+  .like-btn { min-height: 44px; }
+  .share-buttons .btn { min-height: 44px; }
+  .social-links a {
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Footer subscribe form stacks full-width */
+  .subscribe-form { flex-direction: column; align-items: stretch; }
+  .subscribe-form input[type="email"] { min-width: 0; }
+  .subscribe-form .btn { width: 100%; min-height: 48px; }
+
+  /* Pagination: page info on its own line, Prev/Next share a row */
+  .pagination { gap: 0.75rem; }
+  .page-info { order: -1; flex-basis: 100%; text-align: center; }
+  .pagination .btn { flex: 1 1 130px; min-height: 44px; }
+
+  /* Admin */
+  .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .stat-value { font-size: 1.6rem; }
+  .admin-post-actions { width: 100%; }
+  .admin-post-actions .btn { flex: 1; }
+  .reply-actions { flex-wrap: wrap; }
+  .reply-actions .btn { flex: 1 1 140px; min-height: 44px; }
+}
+
+/* ============================================================
+   Interactive polish — glow & lift
+   Muse-nav-rail-inspired interactive states in the warm
+   terracotta design language. CSS only; markup untouched.
+   - Hover-driven effects live inside @media (hover: hover), so
+     touch devices never get stuck hover states.
+   - Touch keeps :active press feedback outside that query.
+   - prefers-reduced-motion disables all transitions/animations.
+   ============================================================ */
+
+/* --- transition wiring for interactive elements --- */
+.btn,
+.site-nav a,
+.site-title,
+.nav-toggle,
+.tab-btn,
+.tag-btn,
+.like-btn,
+.share-btn,
+.md-toolbar-btn,
+.donate-btn,
+.social-links a,
+.post-card,
+.stat-card,
+.message,
+.comment,
+.admin-post-item,
+.simple-list li,
+.subscribe-panel {
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    text-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="search"],
+textarea {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* --- form inputs: warm focus ring glow (complements the
+   existing terracotta outline) --- */
+input:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(201, 106, 53, 0.28);
+}
+
+/* --- keyboard focus: warm outline, all devices --- */
+.site-nav a:focus-visible,
+.tab-btn:focus-visible,
+.tag-btn:focus-visible,
+.like-btn:focus-visible,
+.btn:focus-visible,
+.nav-toggle:focus-visible,
+.share-btn:focus-visible,
+.md-toolbar-btn:focus-visible,
+.social-links a:focus-visible,
+.donate-btn:focus-visible {
+  outline: 2px solid #c96a35;
+  outline-offset: 2px;
+}
+
+/* --- hover glow states (hover-capable devices only) --- */
+@media (hover: hover) {
+
+  /* Nav links: soft terracotta glow + brighten */
+  .site-nav a:hover {
+    text-shadow: 0 0 12px rgba(255, 214, 170, 0.6);
+  }
+  /* Forward-compatible current-section indicator: lights up once
+     the nav Links carry aria-current="page" (needs a JSX change). */
+  .site-nav a[aria-current="page"] {
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255, 214, 170, 0.55);
+    position: relative;
+  }
+  .site-nav a[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 2px;
+    border-radius: 2px;
+    background: #ffd6aa;
+    box-shadow: 0 0 8px rgba(255, 214, 170, 0.8);
+  }
+
+  /* Primary buttons: glow halo + slight lift */
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 3px rgba(201, 106, 53, 0.28), 0 6px 16px rgba(126, 53, 23, 0.28);
+  }
+
+  /* Ghost & danger buttons: soft halo */
+  .btn-ghost:hover {
+    box-shadow: 0 0 10px rgba(201, 106, 53, 0.25);
+  }
+  .btn-danger-outline:hover {
+    box-shadow: 0 0 10px rgba(179, 55, 47, 0.3);
+  }
+
+  /* Header controls stay readable on the sunset gradient:
+     white halo instead of terracotta. */
+  .site-header .btn-ghost:hover {
+    box-shadow: 0 0 12px rgba(255, 233, 210, 0.35);
+  }
+  .site-header .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(255, 248, 240, 0.45), 0 4px 12px rgba(60, 25, 5, 0.3);
+  }
+  .nav-toggle:hover {
+    box-shadow: 0 0 10px rgba(255, 233, 210, 0.3);
+  }
+  .site-title:hover {
+    text-shadow: 0 0 14px rgba(255, 233, 210, 0.45), 0 1px 3px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Cards: very subtle lift + soft shadow deepening */
+  .post-card:hover,
+  .stat-card:hover,
+  .message:hover,
+  .comment:hover,
+  .admin-post-item:hover,
+  .simple-list li:hover,
+  .subscribe-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(80, 60, 30, 0.14);
+  }
+
+  /* Like button: halo on hover, persistent soft glow when liked */
+  .like-btn:hover {
+    box-shadow: 0 0 10px rgba(201, 106, 53, 0.3);
+  }
+  .like-btn.liked {
+    box-shadow: 0 0 10px rgba(201, 106, 53, 0.22);
+  }
+
+  /* Admin tabs + tag pills: glow on hover, persistent glow on active */
+  .tab-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent-dark);
+    box-shadow: 0 0 10px rgba(201, 106, 53, 0.28);
+  }
+  .tab-btn.active {
+    box-shadow: 0 0 12px rgba(201, 106, 53, 0.45);
+  }
+  .tag-btn:hover {
+    box-shadow: 0 0 8px rgba(201, 106, 53, 0.3);
+  }
+  .tag-btn.active {
+    box-shadow: 0 0 8px rgba(201, 106, 53, 0.45);
+  }
+
+  /* Share buttons + markdown toolbar: soft halo */
+  .share-btn:hover {
+    box-shadow: 0 0 8px rgba(201, 106, 53, 0.25);
+  }
+  .md-toolbar-btn:hover {
+    box-shadow: 0 0 6px rgba(201, 106, 53, 0.25);
+  }
+
+  /* Footer */
+  .social-links a:hover {
+    box-shadow: 0 0 10px rgba(216, 205, 184, 0.3);
+  }
+  .donate-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(185, 85, 46, 0.5), 0 6px 14px rgba(126, 53, 23, 0.3);
+  }
+
+  /* Post card title link: soft glow */
+  .post-card-title a:hover {
+    text-shadow: 0 0 10px rgba(201, 106, 53, 0.35);
   }
 }
-.donate-btn {
-  display: inline-block;
-  margin-top: 1rem;
-  padding: 0.55rem 1.25rem;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.9rem;
+
+/* --- touch press feedback (all devices, including touch-only).
+   Placed after the hover block so :active wins while pressing. --- */
+.btn:active,
+.site-header .btn:active,
+.tab-btn:active,
+.tag-btn:active,
+.like-btn:active,
+.share-btn:active,
+.md-toolbar-btn:active,
+.donate-btn:active,
+.nav-toggle:active,
+.social-links a:active {
+  transform: scale(0.97);
 }
-.donate-btn:hover {
-  background: var(--accent-dark);
-  color: #fff;
-  text-decoration: none;
-}
-.social-links .social-letter {
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.85rem;
+
+/* --- reduced motion: disable all transitions/animations --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }

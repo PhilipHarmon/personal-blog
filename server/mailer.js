@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer");
+const nodemailer = require('nodemailer');
 
 let transporter = null;
 
@@ -23,16 +23,10 @@ function getTransporter() {
 async function sendContactNotification({ name, email, message }) {
   try {
     const t = getTransporter();
-    const to = (
-      process.env.NOTIFY_EMAIL ||
-      process.env.ADMIN_EMAIL ||
-      ""
-    ).trim();
+    const to = (process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || '').trim();
     if (!t || !to) {
-      console.log(
-        "Contact notification skipped: SMTP/NOTIFY_EMAIL not configured",
-      );
-      return { sent: false, reason: "not-configured" };
+      console.log('Contact notification skipped: SMTP/NOTIFY_EMAIL not configured');
+      return { sent: false, reason: 'not-configured' };
     }
     const from = process.env.SMTP_USER;
     await t.sendMail({
@@ -44,7 +38,29 @@ async function sendContactNotification({ name, email, message }) {
     });
     return { sent: true };
   } catch (err) {
-    console.error("Contact notification email failed:", err.message);
+    console.error('Contact notification email failed:', err.message);
+    return { sent: false, reason: err.message };
+  }
+}
+
+// Sends Philip's reply to a contact-message sender. Never throws —
+// returns { sent: false, reason } so the admin UI can report failures.
+async function sendMessageReply({ to, name, replyText }) {
+  try {
+    const t = getTransporter();
+    if (!t) {
+      return { sent: false, reason: 'Email is not set up on the server (SMTP_* missing).' };
+    }
+    const from = process.env.SMTP_USER;
+    await t.sendMail({
+      from: `Mindless Musings <${from}>`,
+      to,
+      subject: 'Re: your message to Mindless Musings',
+      text: `Hi ${name},\n\n${replyText}\n\n— Philip\nMindless Musings: A Quirky Blog`,
+    });
+    return { sent: true };
+  } catch (err) {
+    console.error('Reply email failed:', err.message);
     return { sent: false, reason: err.message };
   }
 }
@@ -54,59 +70,47 @@ async function sendWelcomeEmail({ email, unsubscribeUrl }) {
   try {
     const t = getTransporter();
     if (!t) {
-      console.log("Welcome email skipped: SMTP not configured");
-      return { sent: false, reason: "not-configured" };
+      console.log('Welcome email skipped: SMTP not configured');
+      return { sent: false, reason: 'not-configured' };
     }
     const from = process.env.SMTP_USER;
     await t.sendMail({
       from: `Mindless Musings <${from}>`,
       to: email,
-      subject: "Welcome to Mindless Musings!",
+      subject: 'Welcome to Mindless Musings!',
       text: [
-        "Welcome aboard — thanks for subscribing to Mindless Musings: A Quirky Blog!",
-        "",
+        'Welcome aboard — thanks for subscribing to Mindless Musings: A Quirky Blog!',
+        '',
         "You'll get a short email whenever a new post goes live. No spam, no noise — just the new stuff.",
-        "",
-        "Happy reading,",
-        "Philip",
-        "",
-        "---",
+        '',
+        'Happy reading,',
+        'Philip',
+        '',
+        '---',
         `Unsubscribe anytime: ${unsubscribeUrl}`,
-      ].join("\n"),
+      ].join('\n'),
     });
     return { sent: true };
   } catch (err) {
-    console.error("Welcome email failed:", err.message);
+    console.error('Welcome email failed:', err.message);
     return { sent: false, reason: err.message };
   }
 }
 
 // New-post alert for one subscriber. Never throws.
-async function sendNewPostEmail({
-  to,
-  title,
-  excerpt,
-  postUrl,
-  unsubscribeUrl,
-}) {
+async function sendNewPostEmail({ to, title, excerpt, postUrl, unsubscribeUrl }) {
   try {
     const t = getTransporter();
-    if (!t) return { sent: false, reason: "not-configured" };
+    if (!t) return { sent: false, reason: 'not-configured' };
     const from = process.env.SMTP_USER;
-    const lines = [`There's a new post on Mindless Musings:`, "", title];
-    if (excerpt) lines.push("", excerpt);
-    lines.push(
-      "",
-      `Read it here: ${postUrl}`,
-      "",
-      "---",
-      `Unsubscribe: ${unsubscribeUrl}`,
-    );
+    const lines = [`There's a new post on Mindless Musings:`, '', title];
+    if (excerpt) lines.push('', excerpt);
+    lines.push('', `Read it here: ${postUrl}`, '', '---', `Unsubscribe: ${unsubscribeUrl}`);
     await t.sendMail({
       from: `Mindless Musings <${from}>`,
       to,
       subject: `New post: ${title}`,
-      text: lines.join("\n"),
+      text: lines.join('\n'),
     });
     return { sent: true };
   } catch (err) {
@@ -115,8 +119,4 @@ async function sendNewPostEmail({
   }
 }
 
-module.exports = {
-  sendContactNotification,
-  sendWelcomeEmail,
-  sendNewPostEmail,
-};
+module.exports = { sendContactNotification, sendWelcomeEmail, sendNewPostEmail, sendMessageReply };

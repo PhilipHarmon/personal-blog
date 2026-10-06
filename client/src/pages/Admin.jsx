@@ -384,14 +384,17 @@ export default function Admin() {
           ) : (
             <ul className="message-list">
               {messages.map((m, i) => (
-                <li key={m.id || i} className="message">
-                  <div className="comment-head">
-                    <strong>{m.name}</strong>
-                    <span className="muted"> · {m.email}</span>
-                    {m.createdAt && <span className="muted"> · {formatDate(m.createdAt)}</span>}
-                  </div>
-                  <p>{m.message}</p>
-                </li>
+                <MessageItem
+                  key={m.id || m._id || i}
+                  message={m}
+                  onReplied={(updated) =>
+                    setMessages((prev) =>
+                      prev.map((x) =>
+                        (x.id || x._id) === (updated.id || updated._id) ? { ...x, ...updated } : x
+                      )
+                    )
+                  }
+                />
               ))}
             </ul>
           )}
@@ -407,5 +410,93 @@ function StatCard({ label, value }) {
       <span className="stat-value">{value ?? 0}</span>
       <span className="stat-label">{label}</span>
     </div>
+  );
+}
+
+// One contact message with a reply composer. Clicking Reply opens the
+// composer; sending emails the reply to the message's sender via the API.
+function MessageItem({ message: m, onReplied }) {
+  const [showReply, setShowReply] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
+  const [replyError, setReplyError] = useState('');
+
+  async function sendReply() {
+    const text = replyText.trim();
+    if (!text || sending) return;
+    setSending(true);
+    setReplyError('');
+    try {
+      const id = m.id || m._id;
+      const res = await api.post(`/contact/${id}/reply`, { reply: text });
+      setShowReply(false);
+      setReplyText('');
+      onReplied({ ...m, repliedAt: res.data.repliedAt, replyText: text });
+    } catch (err) {
+      setReplyError(err.response?.data?.error || 'Could not send the reply.');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <li className="message">
+      <div className="comment-head">
+        <strong>{m.name}</strong>
+        <span className="muted"> · {m.email}</span>
+        {m.createdAt && <span className="muted"> · {formatDate(m.createdAt)}</span>}
+        {m.repliedAt && <span className="replied-badge">✓ Replied</span>}
+      </div>
+      <p>{m.message}</p>
+      {m.replyText && !showReply && (
+        <p className="reply-sent">
+          <strong>Your reply:</strong> {m.replyText}
+        </p>
+      )}
+      {!showReply ? (
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => {
+            setShowReply(true);
+            setReplyError('');
+          }}
+        >
+          Reply
+        </button>
+      ) : (
+        <div className="reply-composer">
+          <textarea
+            rows={4}
+            placeholder={`Write your reply to ${m.name}…`}
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            disabled={sending}
+          />
+          {replyError && <p className="form-error">{replyError}</p>}
+          <div className="reply-actions">
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={sendReply}
+              disabled={sending || !replyText.trim()}
+            >
+              {sending ? 'Sending…' : 'Send reply'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => {
+                setShowReply(false);
+                setReplyError('');
+              }}
+              disabled={sending}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </li>
   );
 }

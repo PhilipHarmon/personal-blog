@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import Markdown from "../components/Markdown.jsx";
-import api from "../api.js";
-import LikeButton from "../components/LikeButton.jsx";
-import ShareButtons from "../components/ShareButtons.jsx";
-import CommentSection from "../components/CommentSection.jsx";
-import { formatDate } from "../components/PostCard.jsx";
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import Markdown from '../components/Markdown.jsx';
+import api from '../api.js';
+import LikeButton from '../components/LikeButton.jsx';
+import ShareButtons from '../components/ShareButtons.jsx';
+import CommentSection from '../components/CommentSection.jsx';
+import { formatDate } from '../components/PostCard.jsx';
 
 export default function PostDetail() {
   const { slug } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
-      setError("");
+      setError('');
       try {
         const { data } = await api.get(`/posts/${slug}`);
         if (!cancelled) setPost(data);
@@ -25,8 +25,8 @@ export default function PostDetail() {
         if (!cancelled) {
           setError(
             err.response?.status === 404
-              ? "That post could not be found."
-              : "Could not load the post. Please try again.",
+              ? 'That post could not be found.'
+              : 'Could not load the post. Please try again.'
           );
         }
       } finally {
@@ -79,12 +79,7 @@ export default function PostDetail() {
         )}
       </p>
       {post.coverImage && (
-        <img
-          className="post-cover"
-          src={post.coverImage}
-          alt={post.title}
-          loading="lazy"
-        />
+        <img className="post-cover" src={post.coverImage} alt={post.title} loading="lazy" />
       )}
       <div className="post-body">
         <Markdown>{post.content}</Markdown>

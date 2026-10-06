@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import api from "../api.js";
+import React, { useState } from 'react';
+import api from '../api.js';
 
 const ZERO = { x: 0, facebook: 0, link: 0, other: 0, threads: 0, tumblr: 0 };
 
@@ -20,27 +20,27 @@ export default function ShareButtons({ postId, title, slug }) {
 
   async function shareX() {
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(postUrl)}`;
-    window.open(url, "_blank", "noopener,width=600,height=460");
-    await record("x");
+    window.open(url, '_blank', 'noopener,width=600,height=460');
+    await record('x');
   }
 
   async function shareFacebook() {
     const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`;
-    window.open(url, "_blank", "noopener,width=600,height=460");
-    await record("facebook");
+    window.open(url, '_blank', 'noopener,width=600,height=460');
+    await record('facebook');
   }
 
   async function shareThreads() {
     const text = `${title} ${postUrl}`;
     const url = `https://www.threads.com/intent/post?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank", "noopener,width=600,height=560");
-    await record("threads");
+    window.open(url, '_blank', 'noopener,width=600,height=560');
+    await record('threads');
   }
 
   async function shareTumblr() {
     const url = `https://www.tumblr.com/share/link?url=${encodeURIComponent(postUrl)}&name=${encodeURIComponent(title)}`;
-    window.open(url, "_blank", "noopener,width=600,height=560");
-    await record("tumblr");
+    window.open(url, '_blank', 'noopener,width=600,height=560');
+    await record('tumblr');
   }
 
   async function copyLink() {
@@ -48,22 +48,22 @@ export default function ShareButtons({ postId, title, slug }) {
       await navigator.clipboard.writeText(postUrl);
     } catch {
       // clipboard API unavailable; fall back to a prompt-less selection-free approach
-      const ta = document.createElement("textarea");
+      const ta = document.createElement('textarea');
       ta.value = postUrl;
       document.body.appendChild(ta);
       ta.select();
-      document.execCommand("copy");
+      document.execCommand('copy');
       document.body.removeChild(ta);
     }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    await record("link");
+    await record('link');
   }
 
   async function webShare() {
     try {
       await navigator.share({ title, url: postUrl });
-      await record("other");
+      await record('other');
     } catch {
       // user cancelled or share failed — no record
     }
@@ -88,7 +88,7 @@ export default function ShareButtons({ postId, title, slug }) {
           Tumblr
         </button>
         <button className="btn btn-ghost share-btn" onClick={copyLink}>
-          {copied ? "Copied!" : "Copy link"}
+          {copied ? 'Copied!' : 'Copy link'}
         </button>
         {navigator.share && (
           <button className="btn btn-ghost share-btn" onClick={webShare}>
