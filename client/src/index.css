@@ -242,7 +242,7 @@ img {
   max-width: 1080px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr 1.4fr;
+  grid-template-columns: 1fr 1fr 1fr 1.4fr;
   gap: 2rem;
 }
 
@@ -260,6 +260,9 @@ img {
 }
 .footer-nav a { color: #d8cdb8; }
 .footer-nav a:hover { color: #fff; }
+@media (hover: hover) {
+  .footer-nav a:hover { text-shadow: 0 0 10px rgba(255, 238, 214, 0.6); }
+}
 
 .footer-copy {
   text-align: center;
@@ -424,9 +427,19 @@ img {
   flex-direction: column;
   gap: 0.35rem;
 }
+.field-hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.field-hint code {
+  background: rgba(201, 106, 53, 0.12);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.82em;
+}
 .field label {
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: 600;  font-size: 0.95rem;
 }
 .field-checkbox {
   flex-direction: row;
@@ -589,10 +602,29 @@ textarea { resize: vertical; }
   overflow: hidden;
   box-shadow: var(--shadow);
 }
-.post-card-cover img {
+.post-card-cover img,
+.post-card-cover video {
   width: 100%;
   height: 220px;
   object-fit: cover;
+  display: block;
+  background: #000;
+}
+/* 16:9 embed used for YouTube covers */
+.cover-video-embed {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  background: #000;
+}
+.cover-video-embed iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 .post-card-body { padding: 1.25rem 1.5rem; }
 .post-card-title { margin: 0 0 0.4rem; font-size: 1.5rem; }
@@ -614,11 +646,17 @@ textarea { resize: vertical; }
   margin: 0 0 1.5rem;
 }
 .post-cover {
-  border-radius: var(--radius);
   margin: 0 0 2rem;
-  max-height: 420px;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.post-cover img,
+.post-cover video {
   width: 100%;
+  max-height: 420px;
   object-fit: cover;
+  display: block;
+  background: #000;
 }
 
 .post-body {
@@ -1015,7 +1053,7 @@ textarea { resize: vertical; }
     gap: 1.5rem;
   }
 
-  .post-card-cover img { height: 170px; }
+  .post-card-cover img, .post-card-cover video { height: 170px; }
 
   .feed-controls .btn { flex: 1; }
 
@@ -1204,7 +1242,6 @@ input:focus, textarea:focus {
   }
 
   /* Cards: very subtle lift + soft shadow deepening */
-  .post-card:hover,
   .stat-card:hover,
   .message:hover,
   .comment:hover,
@@ -1213,6 +1250,13 @@ input:focus, textarea:focus {
   .subscribe-panel:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 22px rgba(80, 60, 30, 0.14);
+  }
+
+  /* Post cards: brighter warm glow + lift */
+  .post-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(201, 106, 53, 0.55);
+    box-shadow: 0 0 26px rgba(201, 106, 53, 0.5), 0 14px 30px rgba(126, 53, 23, 0.3);
   }
 
   /* Like button: halo on hover, persistent soft glow when liked */

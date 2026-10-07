@@ -266,6 +266,10 @@ export default function Admin() {
                 onChange={setField('content')}
                 placeholder="Write your post in markdown…"
               />
+              <p className="field-hint">
+                Tips: size an image with <code>![caption|600](url)</code> (or <code>|600x400</code> for
+                width × height); paste a YouTube URL on its own line to embed the player.
+              </p>
             </div>
             <div className="field">
               <label htmlFor="ed-tags">Tags (comma-separated)</label>
@@ -278,13 +282,13 @@ export default function Admin() {
               />
             </div>
             <div className="field">
-              <label htmlFor="ed-cover">Cover image URL</label>
+              <label htmlFor="ed-cover">Cover image or video URL</label>
               <input
                 id="ed-cover"
                 type="url"
                 value={form.coverImage}
                 onChange={setField('coverImage')}
-                placeholder="https://…"
+                placeholder="https://… (image, .mp4 video, or YouTube link)"
               />
             </div>
             <div className="field field-checkbox">

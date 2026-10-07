@@ -38,10 +38,13 @@ export default function MarkdownToolbar({ textareaRef, value, onChange }) {
     },
     {
       label: 'Image',
-      title: 'Insert image (paste an image URL)',
+      title: 'Insert image — you can set an optional width in pixels',
       onClick: () => {
         const url = promptUrl('Image URL:');
-        if (url) splice('![', `](${url})`, 'image description');
+        if (!url) return;
+        const width = window.prompt('Width in pixels (optional — leave blank for full width):');
+        const size = width && /^\d+$/.test(width.trim()) ? `|${width.trim()}` : '';
+        splice('![', `](${url})`, `image description${size}`);
       },
     },
     {

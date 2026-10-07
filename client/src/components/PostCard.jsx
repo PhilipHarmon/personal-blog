@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import CoverMedia from './CoverMedia';
 
 export function formatDate(iso) {
   if (!iso) return '';
@@ -12,9 +13,12 @@ export default function PostCard({ post }) {
   return (
     <article className="post-card">
       {post.coverImage && (
-        <Link to={`/post/${post.slug}`} className="post-card-cover">
-          <img src={post.coverImage} alt={post.title} loading="lazy" />
-        </Link>
+        <CoverMedia
+          src={post.coverImage}
+          title={post.title}
+          linkTo={`/post/${post.slug}`}
+          className="post-card-cover"
+        />
       )}
       <div className="post-card-body">
         <h2 className="post-card-title">

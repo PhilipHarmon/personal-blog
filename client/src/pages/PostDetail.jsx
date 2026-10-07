@@ -5,6 +5,7 @@ import api from '../api.js';
 import LikeButton from '../components/LikeButton.jsx';
 import ShareButtons from '../components/ShareButtons.jsx';
 import CommentSection from '../components/CommentSection.jsx';
+import CoverMedia from '../components/CoverMedia.jsx';
 import { formatDate } from '../components/PostCard.jsx';
 
 export default function PostDetail() {
@@ -79,7 +80,7 @@ export default function PostDetail() {
         )}
       </p>
       {post.coverImage && (
-        <img className="post-cover" src={post.coverImage} alt={post.title} loading="lazy" />
+        <CoverMedia src={post.coverImage} title={post.title} className="post-cover" />
       )}
       <div className="post-body">
         <Markdown>{post.content}</Markdown>
